@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
 	//open  read close ---
 	
 
-	if(argv[1][0] == '-' && argv[1][1] == 'i' && strlen(argv[1]) == )
+	if(argv[1][0] == '-' && argv[1][1] == 'i' && strlen(argv[1]) == 2)
 	{
 		if(flag[0] + flag[1] == 1)
 			insertionSort(&lnklst, charSort);
