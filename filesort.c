@@ -129,14 +129,14 @@ int charSort(void* strptr1, void* strptr2)
 	if (str1[i] > str2[i]){
 		return 1;}
 	else if (str1[i] < str2[i]){
-	return -1;}}
+		return -1;}}
 	return 0;
 
 }
 
-int insertionSort( void* p_linklistptr, int (*comparator)(void*, void*))
+int insertionSort( void* toSort, int (*comparator)(void*, void*))
 {
-	linklist* p_linklist = p_linklistptr;
+	linklist* p_linklist = toSort;
 	int i,j;
 	char temp[512];
 	char pstr[512];
@@ -167,9 +167,9 @@ int insertionSort( void* p_linklistptr, int (*comparator)(void*, void*))
 	return 0;
 }
 
-int quickSortStr( void* p_linklistptr,int l,int r, int (*comparator)(void*, void*))
+int quickSortHelp( void* toSort,int l,int r, int (*comparator)(void*, void*))
 {
-	linklist* p_linklist = p_linklistptr;
+	linklist* p_linklist = toSort;
 	    if (l < r)
 	    {
 	        int i = l, j = r;
@@ -217,20 +217,20 @@ int quickSortStr( void* p_linklistptr,int l,int r, int (*comparator)(void*, void
 	            }
 	        }
 	        linklist_modify_node(p_linklist, p_node->next->index - i, temp);
-	        quickSortStr(p_linklist, l, i - 1,comparator);
-	        quickSortStr(p_linklist, i + 1, r,comparator);
+	        quickSortHelp(p_linklist, l, i - 1,comparator);
+	        quickSortHelp(p_linklist, i + 1, r,comparator);
 	    }
 
 	return 0;
 }
-int quickSort( void* p_linklistptr, int (*comparator)(void*, void*))
+int quickSort( void* toSort, int (*comparator)(void*, void*))
 {
-	linklist* p_linklist = p_linklistptr;
+	linklist* p_linklist = toSort;
 	node *p_node=NULL;
 	p_node=&(p_linklist->head);
 	int l = 0;
 	int r = p_node->next->index - 1;
-	return quickSortStr(p_linklist,l,r, comparator);
+	return quickSortHelp(p_linklist,l,r, comparator);
 
 }
 
@@ -289,9 +289,9 @@ int main(int argc, char* argv[])
 	}
 	close(fd);
 	//open  read close ---
+	
 
-
-	if(strcmp(argv[1], "-i" )== 0)
+	if(argv[1][0] == '-' && argv[1][1] == 'i' && strlen(argv[1]) == )
 	{
 		if(flag[0] + flag[1] == 1)
 			insertionSort(&lnklst, charSort);
@@ -304,14 +304,14 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	else if(strcmp(argv[1], "-q") == 0)
+	else if(argv[1][0] == '-' && argv[1][1] == 'q' && strlen(argv[1]) == 2)
 	{
 		if(flag[0] + flag[1] == 1)
 			quickSort(&lnklst, charSort);
 		else if(flag[0] + flag[1] == 2)
 			quickSort(&lnklst, numericSort);
 		else
-		{
+		{	
 			printf("Fatal Error: The input string contains numbers and characters\r\n");
 			exit(-1);
 		}
