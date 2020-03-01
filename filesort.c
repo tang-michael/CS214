@@ -8,6 +8,8 @@
 
 #define EMPTY_STR ""
 
+//AUTHORS: Micheal Tang, Stephen Scott
+
 typedef struct node
 {
 	int index;
