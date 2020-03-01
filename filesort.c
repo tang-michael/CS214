@@ -8,7 +8,7 @@
 
 #define EMPTY_STR ""
 
-//AUTHORS: Micheal Tang, Stephen Scott
+//Authors: Michael Tang, Stephen Scott
 
 typedef struct node
 {
@@ -25,8 +25,9 @@ typedef struct
 void linklist_insert_head(linklist *p_linklist,int index, char *str)
 {
 	node *p_node=(node*)malloc(sizeof(node));
-	if(!p_node)
-	return ;
+	if(!p_node){
+		printf("ERROR: Could not allocate space with malloc.");
+		return ;}
 	p_node->index=index;
 	strcpy(p_node->str, str);
 	p_node->next=NULL;
