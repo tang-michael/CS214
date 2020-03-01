@@ -1,0 +1,3 @@
+We initially ran basic tests using various unsorted strings and integers to make sure that the program was functional. 
+Then, we began adding things to our tests that may cause the program problems like white spaces, blank tokens, and new lines.
+Finally, we began testing for warnings and errors using blank files and incorrect command line arguments. 
