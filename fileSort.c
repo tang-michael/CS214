@@ -246,10 +246,7 @@ int main(int argc, char* argv[])
 	linklist lnklst;
 	lnklst.head.next=NULL;
 	int str_index = 0;
-	char sortFlag1 = argv[1][0];
-	char sortFlag2 = argv[1][1];
-	char flagLength = strlen(argv[1]);
-
+	
 	if(argc < 3)
 	{
 		printf("Fatal Error: expected two arguments, had one\r\n");
@@ -260,6 +257,10 @@ int main(int argc, char* argv[])
 		printf("Fatal Error: file \"%s\" does not exist\r\n",argv[2]);
 		exit(-1);
 	}
+	
+	char sortFlag1 = argv[1][0];
+	char sortFlag2 = argv[1][1];
+	int flagLength = strlen(argv[1]);
 
 //open  read close +++
 	if((fd=open(argv[2] ,O_RDONLY, 0666))==-1){
