@@ -246,6 +246,9 @@ int main(int argc, char* argv[])
 	linklist lnklst;
 	lnklst.head.next=NULL;
 	int str_index = 0;
+	char sortFlag1 = argv[1][0];
+	char sortFlag2 = argv[1][1];
+	char flagLength = strlen(argv[1]);
 
 	if(argc < 3)
 	{
@@ -303,7 +306,7 @@ int main(int argc, char* argv[])
 	//open  read close ---
 	
 
-	if(argv[1][0] == '-' && argv[1][1] == 'i' && strlen(argv[1]) == 2)
+	if(sortFlag1 == '-' && sortFlag2 == 'i' && flagLength == 2)
 	{
 		if(flag[0] + flag[1] == 1)
 			insertionSort(&lnklst, charSort);
@@ -316,7 +319,7 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	else if(argv[1][0] == '-' && argv[1][1] == 'q' && strlen(argv[1]) == 2)
+	else if(sortFlag1 == '-' && sortFlag2 == 'q' && flagLength == 2)
 	{
 		if(flag[0] + flag[1] == 1)
 			quickSort(&lnklst, charSort);
