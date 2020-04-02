@@ -5,7 +5,7 @@ typedef struct {
 } Node;
 
 Node *BT_get_data(BTree *tree) {
-  return (HData *)(tree->item);
+  return (Node *)(tree->item);
 }
 
 BTree *huffmanTree(DLL *tokens, FrequencyMap *fm) {
