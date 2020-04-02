@@ -1,6 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
+
+// #include "compressor.h"
+// #include "frequency.h"
+// #include "huffman.h"
+// #include "mineheap.h"
+// #include "token.h"
+#include "DLL.h"
+
 
 //Compares flag to see
 int find_flag(int argc, char*argv[], char *flag ){
@@ -26,15 +35,15 @@ int main(int argc, char *argv[]){
   set_flag(argc, argv, "-d", &DECOMPRESS);
   set_flag(argc, argv, "-R", &RECURSIVE);
 
-  printf("%i\n", BUILD_CODEBOOK);
-  printf("%i\n", COMPRESS);
-  printf("%i\n", DECOMPRESS);
-  printf("%i\n", RECURSIVE);
+  // printf("%i\n", BUILD_CODEBOOK);
+  // printf("%i\n", COMPRESS);
+  // printf("%i\n", DECOMPRESS);
+  // printf("%i\n", RECURSIVE);
 
   if(!(BUILD_CODEBOOK || COMPRESS || DECOMPRESS)){
     printf("Invalid arguments");
   }
-  if((BUILD_CODEBOOK && COMPRESS) || (BUILD_CODEBOOK || DECOMPRESS) || (COMPRESS || DECOMPRESS)){
+  if((BUILD_CODEBOOK && COMPRESS) || (BUILD_CODEBOOK &&  DECOMPRESS) || (COMPRESS && DECOMPRESS)){
     printf("Invalid combination of arguments");
   }
 
@@ -44,7 +53,19 @@ int main(int argc, char *argv[]){
   } else {
       INPUT_FILE = argv[argc - 1];
   }
-  printf("%s\n", *INPUT_FILE);
-  printf("%s\n", *CODEBOOK_FILE);
+  DIR *d;
+  struct dirent *dir;
+  d = opendir(INPUT_FILE);
+  if (d)
+  {
+        while ((dir = readdir(d)) != NULL)
+        {
+            printf("%s\n", dir->d_name);
+        }
+        closedir(d);
+  }
+
+  // printf("%s\n", INPUT_FILE);
+  // printf("%s\n", CODEBOOK_FILE);
 
 }
