@@ -58,17 +58,20 @@ static void save_string_to_list(linklist *p_linklist, char * pathname)
 
 		if(ch == '\n' || ch == ' ' || ch =='\t')
 		{
-			if(-1 == linklist_update_node(p_linklist, buf))
+			if(-1 == linklist_update_node(p_linklist, buf))	{
+				printf("%s\n", buf);
 				linklist_insert_head(p_linklist, 1, buf, strlen(buf));
+			}
 			memset(buf,'\0',512);
 			strcpy(buf,EMPTY_STR);
 
 			if(ch == ' ')
 			{
 				buf[0] = ch;
-			if(-1 == linklist_update_node(p_linklist, buf))
-					linklist_insert_head(p_linklist, 1, buf, strlen(buf));
-					printf("%s\n", buf);
+			if(-1 == linklist_update_node(p_linklist, buf)) {
+				linklist_insert_head(p_linklist, 1, buf, strlen(buf));
+			}
+					// printf("%s\n", buf);
 				memset(buf,'\0',512);
 				strcpy(buf,EMPTY_STR);
 			}
@@ -80,7 +83,9 @@ static void save_string_to_list(linklist *p_linklist, char * pathname)
 			buf[buf_index++] = ch;
 		}
 	}
-
+	if(-1 == linklist_update_node(p_linklist, buf)) {
+		linklist_insert_head(p_linklist, 1, buf, strlen(buf));
+	}
 
 	close(fd);
 }
@@ -145,7 +150,7 @@ void build_codebook(char* pathname)
 	linklist lnklst;
 	lnklst.head.p_next=NULL;
 	save_string_to_list(&lnklst, pathname);
-	linklist_print(&lnklst);
+	// linklist_print(&lnklst);
 	// printf("%s\n", lnklst );
 
 	MinHeap *heap = minHeap_create(10000, int_comparator);
