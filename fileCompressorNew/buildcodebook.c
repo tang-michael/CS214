@@ -32,7 +32,18 @@ static int int_comparator(void *a, void *b)
 	}
 }
 
-
+int  checkDuplicate(linklist *p_linklist, char *buf){
+	node *p_node=NULL;
+	for(p_node=&(p_linklist->head);p_node;p_node=p_node->p_next)
+	{
+		if(strcmp(p_node->p_next->str, buf) == 0)
+		{
+			return -1;
+		}else{
+			return 1;
+		}
+	}
+}
 static void save_string_to_list(linklist *p_linklist, char * pathname)
 {
 	char buf[512]={};
@@ -49,14 +60,13 @@ static void save_string_to_list(linklist *p_linklist, char * pathname)
 		{
 			if(-1 == linklist_update_node(p_linklist, buf))
 				linklist_insert_head(p_linklist, 1, buf, strlen(buf));
-				// printf("%s\n", buf);
 			memset(buf,'\0',512);
 			strcpy(buf,EMPTY_STR);
 
 			if(ch == ' ')
 			{
 				buf[0] = ch;
-				if(-1 == linklist_update_node(p_linklist, buf))
+			if(-1 == linklist_update_node(p_linklist, buf))
 					linklist_insert_head(p_linklist, 1, buf, strlen(buf));
 					printf("%s\n", buf);
 				memset(buf,'\0',512);
@@ -70,7 +80,8 @@ static void save_string_to_list(linklist *p_linklist, char * pathname)
 			buf[buf_index++] = ch;
 		}
 	}
-	linklist_insert_head(p_linklist, 1, buf, strlen(buf));
+
+
 	close(fd);
 }
 
