@@ -194,7 +194,3 @@ void compress_recursive(char *pathname, char *codebookname)
 	recursive_compress_file(pathname ,codebookname);
 
 }
-
-
-
-

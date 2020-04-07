@@ -32,18 +32,7 @@ static int int_comparator(void *a, void *b)
 	}
 }
 
-int  checkDuplicate(linklist *p_linklist, char *buf){
-	node *p_node=NULL;
-	for(p_node=&(p_linklist->head);p_node;p_node=p_node->p_next)
-	{
-		if(strcmp(p_node->p_next->str, buf) == 0)
-		{
-			return -1;
-		}else{
-			return 1;
-		}
-	}
-}
+
 static void save_string_to_list(linklist *p_linklist, char * pathname)
 {
 	char buf[512]={};
@@ -55,23 +44,18 @@ static void save_string_to_list(linklist *p_linklist, char * pathname)
 
 	while(read(fd, &ch, 1) > 0)
 	{
-
 		if(ch == '\n' || ch == ' ' || ch =='\t')
 		{
-			if(-1 == linklist_update_node(p_linklist, buf))	{
-				printf("%s\n", buf);
+			if(-1 == linklist_update_node(p_linklist, buf))
 				linklist_insert_head(p_linklist, 1, buf, strlen(buf));
-			}
 			memset(buf,'\0',512);
 			strcpy(buf,EMPTY_STR);
 
 			if(ch == ' ')
 			{
 				buf[0] = ch;
-			if(-1 == linklist_update_node(p_linklist, buf)) {
-				linklist_insert_head(p_linklist, 1, buf, strlen(buf));
-			}
-					// printf("%s\n", buf);
+					if(-1 == linklist_update_node(p_linklist, buf))
+					linklist_insert_head(p_linklist, 1, buf, strlen(buf));
 				memset(buf,'\0',512);
 				strcpy(buf,EMPTY_STR);
 			}
@@ -83,10 +67,8 @@ static void save_string_to_list(linklist *p_linklist, char * pathname)
 			buf[buf_index++] = ch;
 		}
 	}
-	if(-1 == linklist_update_node(p_linklist, buf)) {
+	if(-1 == linklist_update_node(p_linklist, buf))
 		linklist_insert_head(p_linklist, 1, buf, strlen(buf));
-	}
-
 	close(fd);
 }
 
@@ -124,7 +106,7 @@ static void minheap_to_huffman(HuffmanNode *hufmTree , MinHeap *heap)
     {
     	if((pitemoutput = (item*)minHeap_pop(heap))!=NULL)
     	{
-    		// printf("%s		%d\n", pitemoutput->pword, pitemoutput->fre);
+    		printf("%s		%d\n", pitemoutput->pword, pitemoutput->fre);
     		arr[i] = pitemoutput->fre;
     		pwords[i] = (char*)malloc(strlen(pitemoutput->pword));
     		strcpy(pwords[i], pitemoutput->pword);
@@ -138,7 +120,7 @@ static void minheap_to_huffman(HuffmanNode *hufmTree , MinHeap *heap)
     		break;
     }
     hufmTree = createHuffmanTree(arr, sizeMH);
-    // PrintHuffmanTree(hufmTree);
+    PrintHuffmanTree(hufmTree);
     HuffmanCode(hufmTree, 0, pwords,fd);
     close(fd);
     free(arr);
@@ -150,8 +132,8 @@ void build_codebook(char* pathname)
 	linklist lnklst;
 	lnklst.head.p_next=NULL;
 	save_string_to_list(&lnklst, pathname);
-	// linklist_print(&lnklst);
-	// printf("%s\n", lnklst );
+	// deleteBlankNode(lnklst);
+	linklist_print(&lnklst);
 
 	MinHeap *heap = minHeap_create(10000, int_comparator);
 	list_to_minheap(&lnklst, heap);
@@ -207,8 +189,7 @@ void build_codebook_recursive(char* pathname)
 	linklist lnklst;
 	lnklst.head.p_next=NULL;
 	get_all_file_string_to_list(&lnklst, pathname);
-	// linklist_print(&lnklst);
-	// linklist_print(lnklst);
+	linklist_print(&lnklst);
 
 	MinHeap *heap = minHeap_create(10000, int_comparator);
 	list_to_minheap(&lnklst, heap);
