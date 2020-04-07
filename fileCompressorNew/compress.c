@@ -110,7 +110,8 @@ void compress_file(char *pathname, char *codebookname)
 		if(ch == '\n' || ch == ' ' || ch == '\t')
 		{
 
-			write(fd_compress, pphuffman[get_index_pwords(ppwords, buf)],strlen(pphuffman[get_index_pwords(ppwords, buf)]));
+			if(strcmp(buf, "") != 0)
+				write(fd_compress, pphuffman[get_index_pwords(ppwords, buf)],strlen(pphuffman[get_index_pwords(ppwords, buf)]));
 			if(ch != ' ')
 			{
 				write(fd_compress, &ch, 1);
@@ -193,3 +194,7 @@ void compress_recursive(char *pathname, char *codebookname)
 	recursive_compress_file(pathname ,codebookname);
 
 }
+
+
+
+
