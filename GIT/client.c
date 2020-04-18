@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
    struct sockaddr_in serv_addr;
    struct hostent *server;
    char buffer[255];
+   char *name;
 
    if(strcmp(argv[1], "configure") == 0){
     int file = open(".Configure", O_WRONLY | O_CREAT | O_TRUNC, 00600);
@@ -36,10 +37,9 @@ int main(int argc, char *argv[]) {
       char *contents = toString(".Configure");
       int i = 0;
       char word[255] = {0};
-      char *name;
       while(i < strlen(contents)){
         if(isspace(contents[i])){
-          name = word;
+          strcpy(name, word);
           printf("%s\n", name);
           memset(word,0,sizeof(word));
           i++;
@@ -49,49 +49,49 @@ int main(int argc, char *argv[]) {
         i++;
       }
         printf("name = %s\n",  name);
+        portno = atoi(word);
         printf("portno = %s\n", word);
     }
   }
-    // portno = atoi(argv[2]);
-   // sockfd = socket(AF_INET, SOCK_STREAM, 0);
-   //
-   // if (sockfd < 0) {
-   //    perror("ERROR opening socket");
-   //    exit(1);
-   // }
-   //
-   // server = gethostbyname(argv[1]);
-   //
-   // if (server == NULL) {
-   //    fprintf(stderr,"ERROR, no such host\n");
-   //    exit(0);
-   // }
-   //
-   // bzero((char *) &serv_addr, sizeof(serv_addr));
-   // serv_addr.sin_family = AF_INET;
-   // bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
-   // serv_addr.sin_port = htons(portno);
-   //
-   // /* Now connect to the server */
-   // if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
-   //    perror("ERROR connecting");
-   //    exit(1);
-   // }
-   //
-   // if (n < 0) {
-   //    perror("ERROR writing to socket");
-   //    exit(1);
-   // }
-   //
-   // /* Now read server response */
-   // bzero(buffer,256);
-   // n = read(sockfd, buffer, 255);
-   //
-   // if (n < 0) {
-   //    perror("ERROR reading from socket");
-   //    exit(1);
-   // }
-   //
-   // printf("%s\n",buffer);
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+   if (sockfd < 0) {
+      perror("ERROR opening socket");
+      exit(1);
+   }
+
+   server = gethostbyname(name);
+
+   if (server == NULL) {
+      fprintf(stderr,"ERROR, no such host\n");
+      exit(0);
+   }
+
+   bzero((char *) &serv_addr, sizeof(serv_addr));
+   serv_addr.sin_family = AF_INET;
+   bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
+   serv_addr.sin_port = htons(portno);
+
+   /* Now connect to the server */
+   if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+      perror("ERROR connecting");
+      exit(1);
+   }
+
+   if (n < 0) {
+      perror("ERROR writing to socket");
+      exit(1);
+   }
+
+   /* Now read server response */
+   bzero(buffer,256);
+   n = read(sockfd, buffer, 255);
+
+   if (n < 0) {
+      perror("ERROR reading from socket");
+      exit(1);
+   }
+
+   printf("%s\n",buffer);
    return 0;
 }
