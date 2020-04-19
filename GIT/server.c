@@ -1,97 +1,118 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+/*
+    C socket server example, handles multiple clients using threads
+    Compile
+    gcc server.c -lpthread -o server
+*/
 
-#include <netdb.h>
-#include <netinet/in.h>
+#include<stdio.h>
+#include<string.h>    //strlen
+#include<stdlib.h>    //strlen
+#include<sys/socket.h>
+#include<arpa/inet.h> //inet_addr
+#include<unistd.h>    //write
+#include<pthread.h> //for threading , link with lpthread
 
-#include <string.h>
+//the thread function
+void *connection_handler(void *);
 
-void doprocessing (int sock);
+int main(int argc , char *argv[])
+{
+    int socket_desc , client_sock , c;
+    struct sockaddr_in server , client;
 
-void doprocessing (int sock) {
-   int n;
-   char buffer[256];
-   bzero(buffer,256);
-   n = read(sock,buffer,255);
+    //Create socket
+    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+    if (socket_desc == -1)
+    {
+        printf("Could not create socket");
+    }
+    puts("Socket created");
 
-   if (n < 0) {
-      perror("ERROR reading from socket");
-      exit(1);
-   }
+    //Prepare the sockaddr_in structure
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons( 8888 );
 
-   printf("Here is the message: %s\n",buffer);
-   n = write(sock,"I got your message",18);
+    //Bind
+    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+    {
+        //print the error message
+        perror("bind failed. Error");
+        return 1;
+    }
+    puts("bind done");
 
-   if (n < 0) {
-      perror("ERROR writing to socket");
-      exit(1);
-   }
+    //Listen
+    listen(socket_desc , 3);
 
+    //Accept and incoming connection
+    puts("Waiting for incoming connections...");
+    c = sizeof(struct sockaddr_in);
+
+
+    //Accept and incoming connection
+    puts("Waiting for incoming connections...");
+    c = sizeof(struct sockaddr_in);
+	pthread_t thread_id;
+
+    while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
+    {
+        puts("Connection accepted");
+
+        if( pthread_create( &thread_id , NULL ,  connection_handler , (void*) &client_sock) < 0)
+        {
+            perror("could not create thread");
+            return 1;
+        }
+
+        //Now join the thread , so that we dont terminate before the thread
+        //pthread_join( thread_id , NULL);
+        puts("Handler assigned");
+    }
+
+    if (client_sock < 0)
+    {
+        perror("accept failed");
+        return 1;
+    }
+
+    return 0;
 }
 
-int main( int argc, char *argv[] ) {
-   int sockfd, newsockfd, portno, clilen;
-   char buffer[256];
-   struct sockaddr_in serv_addr, cli_addr;
-   int n, pid;
+/*
+ * This will handle connection for each client
+ * */
+void *connection_handler(void *socket_desc)
+{
+    //Get the socket descriptor
+    int sock = *(int*)socket_desc;
+    int read_size;
+    char *message , client_message[2000];
 
-   // Creates socket
-   sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    //Send some messages to the client
+    message = "Greetings! I am your connection handler\n";
+    write(sock , message , strlen(message));
 
-   if (sockfd < 0) {
-      perror("ERROR opening socket");
-      exit(1);
-   }
-
-   //Creates socket struct
-   long conv = strtol(argv[1], &argv[1], 10);
-   bzero((char *) &serv_addr, sizeof(serv_addr));
-   portno = conv;
-
-   //Assighns serv_adrr
-   serv_addr.sin_family = AF_INET;
-   serv_addr.sin_addr.s_addr = INADDR_ANY;
-   serv_addr.sin_port = htons(portno);
-
-   //Binds socket
-   if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-      perror("ERROR on binding");
-      exit(1);
-   }
+    message = "Now type something and i shall repeat what you type \n";
+    write(sock , message , strlen(message));
+    read_size = recv(sock , client_message , 2000 , 0);
+		client_message[read_size] = '\0';
+		//Send the message back to client
+    
+    write(sock , client_message , strlen(client_message));
+		//clear the message buffer
+		memset(client_message, 0, 2000);
 
 
-   //Create socket to listen
-   listen(sockfd,5);
-   clilen = sizeof(cli_addr);
+    if(read_size == 0)
+    {
+        puts("Client disconnected");
+        fflush(stdout);
+    }
+    else if(read_size == -1)
+    {
+        perror("recv failed");
+    }
 
-
-   //Multiple clients
-   while (1) {
-      newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-
-      if (newsockfd < 0) {
-         perror("ERROR on accept");
-         exit(1);
-      }
-
-      //Creates child process
-      pid = fork();
-
-      if (pid < 0) {
-         perror("ERROR on fork");
-         exit(1);
-      }
-      //Succesfully created child process / new client
-      if (pid == 0) {
-         /* This is the client process */
-         close(sockfd);
-         doprocessing(newsockfd);
-         exit(0);
-      }
-      else {
-         close(newsockfd);
-      }
-
-   }
+    return 0;
 }
