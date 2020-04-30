@@ -55,9 +55,9 @@ void clientUpdate(char* projectName){
 	read(SERVER, serverManifestContents, buffer);
 	printf("%s\n", serverManifestContents);
 
-	int server_manifest = open("server.manfiest", newFlag, 0644);
-	// write(server_manifest, serverManifestContents, strlen(serverManifestContents));
-	write(server_manifest, "test", strlen("test"));
+	char *serverManifest = "server.manifest";
+	int server_manifest = open(serverManifest, newFlag, mode);
+	write(server_manifest, serverManifestContents, strlen(serverManifestContents));
 	close(server_manifest);
 
 
@@ -83,12 +83,12 @@ void clientUpdate(char* projectName){
 	int conflict_file = open(conflict_name, newFlag, mode);
 	int i;
 	int j;
-	for(i = 0; i < clientNumEntries; i++){
-		writeUpdateFile(clientManifestEntry[i], update_file, conflict_name);
-	}
-	for(j = 0; j < clientNumEntries; j++){
-		writeUpdateFile(serverManifestEntry[i], update_file, conflict_name);
-	}
+	// for(i = 0; i < clientNumEntries; i++){
+	// 	writeUpdateFile(clientManifestEntry[i], update_file, conflict_name);
+	// }
+	// for(j = 0; j < clientNumEntries; j++){
+	// 	writeUpdateFile(serverManifestEntry[i], update_file, conflict_name);
+	// }
 	close(update_file);
 	close(conflict_file);
 	exit(0);

@@ -29,7 +29,7 @@ void compareManifestEntries(manEntry** clientEntry, int clientNumEntries, manEnt
     int fd = open(".Update", newFlag, 0644);
     remove(".Conflict");
     printf("Up To Date");
-    return;
+		exit(0);
   }
   int exist = 0;
   for(i = 0; i < clientNumEntries; i++){
