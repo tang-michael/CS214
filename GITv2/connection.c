@@ -19,7 +19,7 @@ void connect_server (char * Ip, int port){
         error("ERROR opening socket");
     server = gethostbyname(Ip);
 	if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host\n");
+        printf("ERROR, no such host\n");
         exit(0);
     }
 	bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -48,7 +48,7 @@ void configure ( char* IPAddress, char* port ){
 	int port_Number = strtol(port, NULL, 10);
   //Check if port if valid
 	if( port_Number<8000 || port_Number>63999){
-		printf(stderr, "Please chose a valid portnumber");
+		printf("Please chose a valid portnumber");
 		exit(0);
 	}
 	int fd;

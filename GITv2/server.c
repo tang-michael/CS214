@@ -57,3 +57,62 @@ void serverDestroy(int fd){
 	rmdir(project_name);
     return;
 }
+void serverUpdate(int fd){
+	//read project name
+	int buffer;
+	read(fd, &buffer, sizeof(int));
+	char * project_name = malloc(buffer * sizeof(char));
+	read(fd, project_name, buffer);
+
+	//Create manifest name
+  char* manifestPath = malloc(strlen(project_name)*2+10);
+	memset(manifestPath, 0x0, strlen(project_name)*2+10);
+	sprintf(manifestPath, "%s/%s.manifest", project_name, project_name);
+
+	//read manifest
+	struct stat manifest;
+	stat(manifestPath, &manifest);
+	int contents = open(manifestPath, readFlag);
+	char* manifestText = malloc(manifest.st_size+1);
+	memset(manifestText, 0x0, manifest.st_size+1);
+	read(contents, manifestText, manifest.st_size);
+	close(contents);
+
+	//send manifest back to client
+	buffer = manifest.st_size;
+	write(CLIENT_ADDR, &buffer, sizeof(int));
+	write(CLIENT_ADDR, manifestText, buffer);
+}
+// void serverCheckout(int fd){
+//   char* manifestName = createManifestName(projectName);
+//
+//
+//   read(fd, &buffer, sizeof(int));
+//   char * projectName = malloc(buffer*sizeof(char)+1);
+//   read(fd,projectName,buffer);
+//
+// }
+void serverCurrentVersion(int fd){
+  //read project name
+  int buffer;
+  read(fd, &buffer, sizeof(int));
+  char * project_name = malloc(buffer * sizeof(char));
+  read(fd, project_name, buffer);
+
+  //Create manifest name
+  char* manifestPath = createManifestName(project_name);
+
+  //read manifest
+  struct stat manifest;
+  stat(manifestPath, &manifest);
+  int contents = open(manifestPath, readFlag);
+  char* manifestText = malloc(manifest.st_size+1);
+  memset(manifestText, 0x0, manifest.st_size+1);
+  read(contents, manifestText, manifest.st_size);
+  close(contents);
+
+  //send manifest back to client
+  buffer = manifest.st_size;
+  write(SERVER, &buffer, sizeof(int));
+  write(SERVER, manifestText, buffer);
+}

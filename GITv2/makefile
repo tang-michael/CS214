@@ -1,9 +1,8 @@
-all: client.c connection.c manifest.c server.c WTFClient.c WTFServer.c
+all: client.c connection.c manifest.c server.c WTFclient.c WTFserver.c
 	mkdir client
 	mkdir server
-	gcc -g -O -o client/WTF WTFClient.c client.c connection.c manifest.c -lcrypto -lm
-	gcc -g -O -o server/WTFServer WTFServer.c server.c  manifest.c -pthread -lm -lcrypto
-	gcc -g -O -o WTFTest WTFTest.c
+	gcc -g -O -o client/WTF WTFclient.c  client.c conflict.c update.c upgrade.c connection.c manifest.c currentversion.c -lcrypto -lm
+	gcc -g -O -o server/WTFServer WTFserver.c server.c  manifest.c -pthread -lm -lcrypto
 
 
 
