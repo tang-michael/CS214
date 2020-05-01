@@ -87,7 +87,7 @@ void writeUpdateFile(manEntry* entry, int fdUpdate, int fdConflict){
     char *text = malloc((strlen(filePath)+4+hashLength)*sizeof(char));
 
     sprintf(text, "%c,%s,%s\n", entry->code, filePath, entry->hash);
-		printf("%s", text);
+		printf("%c", entry->code);
 
     if(entry->code == 'M'){
       write(fdUpdate, text, strlen(text));

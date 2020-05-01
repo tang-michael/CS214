@@ -83,12 +83,12 @@ void clientUpdate(char* projectName){
 	int conflict_file = open(conflict_name, newFlag, mode);
 	int i;
 	int j;
-	// for(i = 0; i < clientNumEntries; i++){
-	// 	writeUpdateFile(clientManifestEntry[i], update_file, conflict_name);
-	// }
-	// for(j = 0; j < clientNumEntries; j++){
-	// 	writeUpdateFile(serverManifestEntry[i], update_file, conflict_name);
-	// }
+	for(i = 0; i < clientNumEntries; i++){
+		writeUpdateFile(clientManifestEntry[i], update_file, conflict_name);
+	}
+	for(j = 0; j < clientNumEntries; j++){
+		writeUpdateFile(serverManifestEntry[i], update_file, conflict_name);
+	}
 	close(update_file);
 	close(conflict_file);
 	exit(0);
@@ -196,23 +196,36 @@ void removeFile(char *projectName, char *fileName){
 	close(removeOpen);
 
 }
+char* createFilePath(char* projectName, char* fileName){
+	char* filePath = malloc(strlen(projectName)+strlen(fileName)+2);
+	memset(filePath, 0x0, strlen(projectName)*2+10);
+	sprintf(filePath, "%s/%s", projectName, fileName);
+	return filePath;
+
+}
 void addFile(char* projectName, char* fileName){
 	char* manifestName = createManifestName(projectName);
-	manEntry** manifest = readManifest(manifestName);
-
+	char* manifestPath = createManifestPath(projectName);
+	char* filePath = createFilePath(projectName, fileName);
+	manEntry** manifest = readManifest(manifestPath);
+	//
+	// if(access(filePath,F_OK) < 0){
+	// 	printf("File not in project");
+	// 	exit(0);
+	// }
+	manEntry* newFile = newManEntryWithPath(fileName,manifestPath);
 	int i;
-
 	for(i = 0; i < MANIFEST_ENTRIES; i++){
+		printf("%s\n", manifest[i]->name);
 		if(strcmp(manifest[i]->name,fileName) == 0){
-			printf("This file is already being tracked\n");
+			char* tempPath = createFilePath(projectName, fileName);
+			updateManEntry(newFile, tempPath);
 			freeManifest(manifest);
 			exit(0);
 		}
 	}
 
-	manEntry* newFile = newManEntry(fileName);
-
-	int contents = open(manifestName, addFlag, mode);
+	int contents = open(manifestPath, addFlag, mode);
 	writeManEntry(newFile, contents);
 	close(contents);
 	freeManEntry(newFile);
