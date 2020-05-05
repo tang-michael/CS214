@@ -12,12 +12,7 @@
 
 void clientCreate(char* projectName)
 {
-	/*
-	 * 1、发送create命令，发送工程名字
-	 * 2、创建工程目录，.git目录
-	 * 3、接收版本号，接收manifest内容
-	 * 4、本地保存版本号
-	 */
+
 	//1 send "create" to server, then send projectName to server
 	sendTo(SERVER, "create");
 	sendTo(SERVER, projectName);
@@ -61,12 +56,7 @@ void clientCreate(char* projectName)
 
 void serverCreate(int fd)
 {
-	/*
-	 * 1、接收工程名字
-	 * 2、创建工程目录，.git目录，manifest文件创建版本号文件，并保存版本号为1
-	 * 3、创建版本号文件，并保存版本号为1
-	 * 4、向客户端发送版本号，发送manifest文件内容
-	 */
+
 	int versionNumber = 1;
 
 	//1、receive project name
@@ -113,6 +103,14 @@ void serverCreate(int fd)
 	sprintf(versionStr, "%d",  versionNumber);
 	sendTo(fd, versionStr);
 	send_file(fd, manifestName);
+
+	char* historyName = malloc(strlen(projectName)+9);
+	sprintf(historyName,"%s/.history",projectName);
+	int history = open(historyName, newFlag, mode);
+	char* historyText = malloc(strlen(projectName)+15);
+	sprintf(historyText, "0 %s Project Created Created\n", projectName);
+	write(history, historyText, strlen(historyText));
+	close(history);
 
 	free(projectName);
 	free(manifestDirectory);

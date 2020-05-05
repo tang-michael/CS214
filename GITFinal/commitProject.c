@@ -2,37 +2,34 @@
 #include "manifest.h"
 #include "commitProject.h"
 
-/*
- * 1、客户端发送commit命令和工程名字到服务端
- * 2、服务端发送“OK”，然后发送版本号到客户端
- */
 
 void serverCommit(int fd)
 {
 	//Gets project name from client
 	char *projectName = getFrom(fd);
 
+
+	// If git server has the project
+
+	if(judge_file_exists(projectName) !=0 )
+	{
+		sendTo(fd, "ERROR");
+		free(projectName);
+		return;
+
+	}
 	int versionNumber = 0;
+	get_version_number(projectName , &versionNumber);
+	sendTo(fd, "OK");
 	get_version_number(projectName , &versionNumber);
 
 	char* manifestName = generate_manifest_name(projectName, versionNumber);
 
-	// If git server has the project
-
-	if(!judge_file_exists(projectName))
-	{
-		sendTo(fd, "OK");
-
-		int len = floor(log10(versionNumber)) + 1;
-		char* versionStr = malloc(len + 1);
-		sprintf(versionStr, "%d",  versionNumber);
-		sendTo(fd, versionStr);
-		free(versionStr);
-	}
-	else
-	{
-		sendTo(fd, "ERROR");
-	}
+	int len = floor(log10(versionNumber)) + 1;
+	char* versionStr = malloc(len + 1);
+	sprintf(versionStr, "%d",  versionNumber);
+	sendTo(fd, versionStr);
+	free(versionStr);
 	free(projectName);
 	free(manifestName);
 }
@@ -104,16 +101,13 @@ static void generateCommitManifestEntries(char *projectName, manEntry** clientMa
 
 	}
 	close(fd);
+	free(commitFileName);
+
 }
 
 static void createCommitFile(char *projectName)
 {
-	/*
-	 * 1、读取本地的projectName.manifest文件
-	 * 2、根据本地文件生成新的clientCommit.manifest
-	 * 3、projectName.manifest 与 clientCommit.manifest进行比较，生成.commit文件
-	 * 4、删除clientCommit.manifest
-	 */
+
 	//1
 	int versionNumber = 0;
 	get_version_number(projectName , &versionNumber);
@@ -148,12 +142,31 @@ static void createCommitFile(char *projectName)
 
 void clientCommit(char* projectName)
 {
-	/*
-	 * 1、发送commit命令，projectName到服务端
-	 * 2、获取服务器最高版本号，与本地版本号进行比较
-	 * 3、生成目录树文件 .git/directTree.txt
-	 * 4、生成.commit文件
-	 */
+
+
+    char *updateFile = malloc(strlen(projectName) + 14);
+    sprintf(updateFile, "%s/.git/.Update",projectName );
+
+    char *conflictFile = malloc(strlen(projectName) + 16);
+    sprintf(conflictFile, "%s/.git/.Conflict",projectName );
+	if(judge_file_exists(conflictFile) == 0)
+	{
+		printf("The %s file exists!\n",conflictFile);
+		free(updateFile);
+		free(conflictFile);
+		return;
+	}
+	if(judge_file_exists(updateFile) == 0)
+	{
+		if(return_file_size(updateFile) > 0)
+		{
+			printf("The %s file  exists!\n",updateFile);
+			free(updateFile);
+			free(conflictFile);
+			return;
+		}
+	}
+
 	//send command to server
 	sendTo(SERVER, "commit");
 
@@ -162,6 +175,8 @@ void clientCommit(char* projectName)
 
 	// If git server has the project, return OK
 	char *content_return = getFrom(SERVER);
+
+	printf("content_return = %s\n", content_return);
 
 	if(strcmp(content_return, "ERROR") == 0)
 	{
@@ -175,13 +190,10 @@ void clientCommit(char* projectName)
     char* versionStr = getFrom(SERVER);
     int serverVersionNumber = atoi(versionStr);
 
-	//比较client与server的版本号文件是否一样？
 
 	if(versionNumber == serverVersionNumber)
 	{
-		//1、读取本地的manifest
-		//2、遍历本地所有文件，生成本地的hash
-		//3、将本地的hash与manifest进行比较，将结果写入commit
+
 		char *directTreeFile = malloc(strlen(projectName) + 21);
 		sprintf(directTreeFile, "%s/.git/directTree.txt", projectName );
 		int fd_directTreeFile = open(directTreeFile, newFlag, 0644);
@@ -195,4 +207,5 @@ void clientCommit(char* projectName)
 
 
 	free(content_return);
+	free(versionStr);
 }

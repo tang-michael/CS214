@@ -128,7 +128,6 @@ void send_file(int fd, char * path)
 	}
 	int length = lseek(fd_send,0,SEEK_END);
 	lseek(fd_send,0, SEEK_SET);
-	//发送数据的总长度
 	write(fd, &length ,sizeof(int));
 	printf("send_file length = %d\n", length);
 

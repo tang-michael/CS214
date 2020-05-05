@@ -48,6 +48,10 @@ void check_arg(char* command, int fd){
     {
     	serverCurrentVersion(fd);
     }
+		else if(strcmp(command,"history") == 0)
+    {
+    	serverHistory(fd);
+    }
 
 
 }
@@ -65,7 +69,6 @@ void* func(void *vargp)
 
 int main(int argc, char *argv[])
 {
-
 	if (argc<2){
 		printf("you must put in a port number\n");
 		return 0;

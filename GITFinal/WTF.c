@@ -9,7 +9,7 @@
 #include "destroyProject.h"
 #include "currentversionProject.h"
 #include "checkoutProject.h"
-
+#include "historyProject.h"
 
 int main (int argc, char ** argv)
 {
@@ -19,7 +19,6 @@ int main (int argc, char ** argv)
 		exit(0);
 	}
 
- 	//==============================FUNCTIONS THAT DO NOT NEED TO CONNECT TO THE SERVER ====================================
 	if (strcmp(argv[1],"configure")==0)
 	{
 		if (argc<4){
@@ -108,6 +107,13 @@ int main (int argc, char ** argv)
 	else if(strcmp(argv[1],"upgrade")==0)
 	{
 		clientUpgrade(argv[2]);
+		shutdown(SERVER, SHUT_RDWR);
+		close(SERVER);
+		exit(0);
+	}
+	else if(strcmp(argv[1],"history")==0)
+	{
+		clientHistory(argv[2]);
 		shutdown(SERVER, SHUT_RDWR);
 		close(SERVER);
 		exit(0);

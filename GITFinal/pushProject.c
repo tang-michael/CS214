@@ -8,9 +8,6 @@
  *
  */
 
-
-//在输入的commit字符串中提取条目
-//A,hello/hello2.c,0d2aae7d156d796b97ae11b4dba506a55f54a75e
 static manEntry *extractCommitEntries(char *text, int trailer)
 {
 	int leader = trailer;
@@ -39,13 +36,11 @@ static manEntry *extractCommitEntries(char *text, int trailer)
 	return entry;
 }
 
-//读取指定commit文件中的条目
 static manEntry **readCommit(char *commitName, int* size)
 {
 	struct stat buff;
 	stat(commitName, &buff);
 
-	//将manifest的内容读取到text中
 	int contents = open(commitName, readFlag, 0644);
 	char *text = malloc(buff.st_size*sizeof(char)+1);
 	memset(text,0x0,buff.st_size*sizeof(char)+1);
@@ -69,7 +64,6 @@ static manEntry **readCommit(char *commitName, int* size)
 		counter++;
 
 		leader++;
-		//此时的trailer为下一行开始的位置
 		if(text[leader] == '\0' && leader < buff.st_size)
 			leader++;
 
@@ -101,16 +95,12 @@ static void freeReadManifest(manEntry** manifest, int *size)
 
 static void receiveCommitFileAndUpdateManifestFile(int fd, char *commitFileName, char *manifestName, char* projectName, int versionNumber)
 {
-	/*
-	 * 1、解析commit文件，接收client发送的文件,同时对老版本文件以版本号为后缀进行保存，更新manifest的内容
-	 * 2、
-	 */
+
 	int sizeCommit = 0;
 	int i, j;
 	manEntry** commitEntry = readCommit(commitFileName, &sizeCommit);
 	int sizeManifest = 0;
 	manEntry** manifestEntry = readManifest(manifestName, &sizeManifest);
-	//接收文件
 	for(i = 0; i < sizeCommit; i++)
 	{
 		printf("%c,%s,%s\n", commitEntry[i]->code, commitEntry[i]->name, commitEntry[i]->hash);
@@ -128,7 +118,6 @@ static void receiveCommitFileAndUpdateManifestFile(int fd, char *commitFileName,
 			free(newName);
 		}
 	}
-	//更新manifest的内容
 	char *newManifestName = generate_manifest_name(projectName, versionNumber);
 	int fd_newManifestName = open(newManifestName, newFlag, mode);
 	int M = 0, D = 0;
@@ -163,7 +152,7 @@ static void receiveCommitFileAndUpdateManifestFile(int fd, char *commitFileName,
 				}
 			}
 		}
-		if(M == 0 && D == 0)//此时表示这个文件没有改动
+		if(M == 0 && D == 0)
 			writeManEntry(manifestEntry[i], fd_newManifestName);
 
 	}
@@ -206,15 +195,8 @@ void serverPush(int fd)
 	// If git server has the project
 	if(!judge_file_exists(projectName))
 	{
-		//这个工程在server中已经存在
 		sendTo(fd, "OK");
-		/*
-		 * 1、接收.Commit文件
-		 * 2、根据.Commit文件内容，接收提交的文件(新版本文件)，同时对老版本文件以版本号为后缀进行保存，更新manifest的内容
-		 * 3  更新保存版本号
-		 * 4、将server端的manifest文件发送到client
-		 * 5、删除.Commit文件
-		 */
+
 		printf("now, begin receive %s from client\n", commitFileName);
 		//1
 		receive_file(fd, commitFileName);
@@ -234,6 +216,15 @@ void serverPush(int fd)
 		sendTo(fd, versionStr);
 		char* newManifestName = generate_manifest_name(projectName, versionNumber);
 		send_file(fd, newManifestName);
+
+
+		char* historyName = malloc(strlen(projectName)+9);
+		sprintf(historyName,"%s/.history",projectName);
+		int history = open(historyName, addFlag, mode);
+		char* historyText = malloc(len+strlen(projectName)+17);
+		sprintf(historyText, "%i %s Files Pushed\n", versionNumber, projectName);
+		write(history, historyText, strlen(historyText));
+		close(history);
 
 		//5
 		remove(commitFileName);
@@ -280,13 +271,6 @@ void clientPush(char* projectName)
 	}
 
 
-	/*
-	 * 1、发送本地的.commit文件到服务端
-	 * 2、根据.commit内容发送文件
-	 * 3、删除manifest，接收新的版本号，然后接收新的manifest文件
-	 * 4、删除.Commit
-	 */
-
 	//1
 	printf("now, begin send %s to server\n", commitFileName);
 	send_file(SERVER, commitFileName);
@@ -302,8 +286,7 @@ void clientPush(char* projectName)
 	manEntry** commitEntry = readCommit(commitFileName, &size);
 	for(i = 0; i < size; i++)
 	{
-//		printf("%c,%s,%s\n", commitEntry[i]->code, commitEntry[i]->name, commitEntry[i]->hash);
-		//发送文件
+
 		if(commitEntry[i]->code == 'A'||commitEntry[i]->code == 'M')
 		{
 			send_file(SERVER, commitEntry[i]->name);
@@ -321,6 +304,7 @@ void clientPush(char* projectName)
     save_version_number(projectName , &versionNumber);
 	char* newManifestName = generate_manifest_name(projectName, versionNumber);
 	receive_file(SERVER ,newManifestName);
+
 
 	//4
 	remove(commitFileName);
