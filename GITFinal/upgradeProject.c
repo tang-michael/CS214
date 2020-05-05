@@ -5,9 +5,6 @@
 void clientUpgrade(char* projectName)
 {
 
-	//1
-	sendTo(SERVER, "upgrade");
-	sendTo(SERVER, projectName);
 	//2
     char *updateFile = malloc(strlen(projectName) + 14);
     sprintf(updateFile, "%s/.git/.Update",projectName );
@@ -28,6 +25,10 @@ void clientUpgrade(char* projectName)
 		free(conflictFile);
 		return;
 	}
+	//1
+	sendTo(SERVER, "upgrade");
+	sendTo(SERVER, projectName);
+
 	//3
 	//receive exist
 	char *existFlag = getFrom(SERVER);

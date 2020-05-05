@@ -4,19 +4,48 @@
 
 void addFile(char*projectName, char* fileName)
 {
-  // char* filePath = malloc(strlen(projectName) + strlen(fileName)+1);
-  // sprintf(filePath, "%s/%s", projectName, fileName);
-  // printf("%s\n", filePath);
-  // if(open(filePath, O_RDONLY, 0644) < 0){
-  //   printf("File does not exist in project\n");
-  //   exit(0);
-  // }
-  // int versionNumber;
-  // get_version_number(projectName , &versionNumber);
-  // manEntry* newFile = newManEntry(fileName, versionNumber);
-  // char* manifestFilePath = generate_manifest_name(projectName, versionNumber);
-  // int contents = open(manifestFilePath, addFlag, mode);
-  // updateManEntry(newFile, contents);
-  // close(contents);
-  // freeManEntry(newFile);
+
+	
+	if(judge_file_exists(projectName) !=0 )
+	{
+		printf("The project you entered doesn't exist!\n");
+		return ;
+	}
+	char* clientManifestName = malloc(strlen(projectName) + 25);  //hello/.git/clientCommit.manifest
+	sprintf(clientManifestName, "%s/.git/client.manifest", projectName);
+
+
+	manEntry* newProject = newManEntry(fileName, 2);
+
+	int fd_clientCommitManifestName = 0;
+	fd_clientCommitManifestName = open(clientManifestName, newFlag, mode);
+
+	int sizeOfClientManifestEntry = 0;
+	manEntry** clientManifestEntry = readManifest(clientManifestName, &sizeOfClientManifestEntry);
+
+
+	int i = 0;
+	int exist = 0;
+	for(i = 0; i < sizeOfClientManifestEntry; i++)
+	{
+		if(strcmp(clientManifestEntry[i]->name, newProject->name)== 0)
+		{
+			clientManifestEntry[i]->version = 2;
+			exist = 1;
+		}
+		writeManEntry(clientManifestEntry[i], fd_clientCommitManifestName);
+	}
+	if(exist == 0)
+	{
+		writeManEntry(newProject, fd_clientCommitManifestName);
+	}
+
+	close(fd_clientCommitManifestName);
+
+
+	free(clientManifestName);
+	free(newProject->name);
+	free(newProject->hash);
+	free(newProject);
+	freeManifest(clientManifestEntry, &sizeOfClientManifestEntry);
 }

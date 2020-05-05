@@ -62,15 +62,6 @@ void clientRollback(char *projectName, int rollbackVersion)
 			free(filename);
 		}
 	}
-
-  char* historyName = malloc(strlen(projectName)+9);
-  sprintf(historyName,"%s/.history",projectName);
-  int history = open(historyName, addFlag, mode);
-  char* historyText = malloc(len+strlen(projectName)+17);
-  sprintf(historyText, "%i %s Rollback\n", versionNumber, projectName);
-  write(history, historyText, strlen(historyText));
-  
-  close(history);
 	free(existFlag);
 	free(versionStr);
 	free(manifestDirectory);
@@ -81,7 +72,6 @@ void clientRollback(char *projectName, int rollbackVersion)
 
 void serverRollback(int fd)
 {
-
 
 	//1
     char* projectName = getFrom(fd);

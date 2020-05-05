@@ -50,7 +50,6 @@ void serverupdate(int fd)
 void clientUpdate(char *projectName)
 {
 
-
 	//1
 	sendTo(SERVER, "update");
 	sendTo(SERVER, projectName);
@@ -206,6 +205,7 @@ void clientUpdate(char *projectName)
 		if(!exist) //A
 		{
 			int U = 0;
+			//此时还需要判断这个添加是否是冲突
 			for(w = 0; w < size_manifestNamae; w++)
 			{
 				if(strstr(projectNameManifestEntry[w]->name, clientManifestEntry[j]->name) != 0)

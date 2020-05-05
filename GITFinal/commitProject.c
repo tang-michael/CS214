@@ -2,7 +2,6 @@
 #include "manifest.h"
 #include "commitProject.h"
 
-
 void serverCommit(int fd)
 {
 	//Gets project name from client
@@ -34,7 +33,23 @@ void serverCommit(int fd)
 	free(manifestName);
 }
 
-//projectName.manifest 与 clientCommit.manifest进行比较，生成.commit文件
+
+static int judge_add_remove(manEntry** clientManifestEntry, int sizeOfClientManifestEntry, manEntry* node)
+{
+	int i;
+
+	int returnValue = 0;
+	for(i = 0; i < sizeOfClientManifestEntry; i++)
+	{
+		if(strcmp(node->name, clientManifestEntry[i]->name) != 0)
+		{
+			returnValue = clientManifestEntry[i]->version;
+			clientManifestEntry[i]->version = 3;
+			return returnValue;
+		}
+	}
+	return 0;
+}
 //hello.manifest  clientCommit.manifest
 static void generateCommitManifestEntries(char *projectName, manEntry** clientManifestEntry, int manifestNumEntries, manEntry** clientCommitEntry, int commitNumEntries)
 {
@@ -43,6 +58,13 @@ static void generateCommitManifestEntries(char *projectName, manEntry** clientMa
 	char *commitFileName = malloc(strlen(projectName) + 14);
 	sprintf(commitFileName, "%s/.git/.Commit", projectName);
 	int fd = open(commitFileName, newFlag, 0644);
+
+	char* clientManifestName = malloc(strlen(projectName) + 25);  //hello/.git/client.manifest
+	sprintf(clientManifestName, "%s/.git/client.manifest", projectName);
+
+	int sizeOfClientManifestEntry = 0;
+	manEntry** clientCommitManifestEntry = readManifest(clientManifestName, &sizeOfClientManifestEntry);
+
 
 	int exist = 0;
 	for(i = 0; i < manifestNumEntries; i++)  //1
@@ -60,7 +82,8 @@ static void generateCommitManifestEntries(char *projectName, manEntry** clientMa
 					{
 						char *commitStr = malloc(strlen(clientCommitEntry[j]->name) + strlen(clientCommitEntry[j]->hash) + 5);
 						sprintf(commitStr, "M,%s,%s\n", clientCommitEntry[j]->name, clientCommitEntry[j]->hash);
-						write(fd, commitStr, strlen(commitStr));
+						if(judge_add_remove(clientCommitManifestEntry, sizeOfClientManifestEntry, clientCommitEntry[j]) != 1)
+							write(fd, commitStr, strlen(commitStr));
 						free(commitStr);
 					}
 					else
@@ -74,7 +97,8 @@ static void generateCommitManifestEntries(char *projectName, manEntry** clientMa
 			{
 				char *commitStr = malloc(strlen(clientManifestEntry[i]->name) + strlen(clientManifestEntry[i]->hash) + 5);
 				sprintf(commitStr, "D,%s,%s\n", clientManifestEntry[i]->name, clientManifestEntry[i]->hash);
-				write(fd, commitStr, strlen(commitStr));
+				if(judge_add_remove(clientCommitManifestEntry, sizeOfClientManifestEntry, clientManifestEntry[i]) != 1)
+					write(fd, commitStr, strlen(commitStr));
 				free(commitStr);
 			}
 		}
@@ -94,15 +118,29 @@ static void generateCommitManifestEntries(char *projectName, manEntry** clientMa
 		{
 			char *commitStr = malloc(strlen(clientCommitEntry[j]->name) + strlen(clientCommitEntry[j]->hash) + 10);
 			sprintf(commitStr, "A,%s,%s\n", clientCommitEntry[j]->name, clientCommitEntry[j]->hash);
-			write(fd, commitStr, strlen(commitStr));
+			if(judge_add_remove(clientCommitManifestEntry, sizeOfClientManifestEntry, clientCommitEntry[j]) != 1)
+				write(fd, commitStr, strlen(commitStr));
 			free(commitStr);
 			commitStr = NULL;
 		}
 
 	}
+
+	for(i = 0; i < sizeOfClientManifestEntry; i++)
+	{
+		if(clientCommitManifestEntry[i]->version == 2)
+		{
+			char *commitStr = malloc(strlen(clientCommitManifestEntry[i]->name) + strlen(clientCommitEntry[i]->hash) + 10);
+			sprintf(commitStr, "A,%s,%s\n", clientCommitEntry[i]->name, clientCommitEntry[i]->hash);
+			write(fd, commitStr, strlen(commitStr));
+			free(commitStr);
+		}
+	}
+
+
 	close(fd);
 	free(commitFileName);
-
+	freeManifest(clientCommitManifestEntry, &sizeOfClientManifestEntry);
 }
 
 static void createCommitFile(char *projectName)
@@ -118,7 +156,11 @@ static void createCommitFile(char *projectName)
 	//2
 	char* clientCommitManifestName = malloc(strlen(projectName) + 28);  //hello/.git/clientCommit.manifest
 	sprintf(clientCommitManifestName, "%s/.git/clientCommit.manifest", projectName);
-	int fd_clientCommitManifestName = open(clientCommitManifestName, newFlag, mode);
+
+
+
+
+	int fd_clientCommitManifestName = open(clientCommitManifestName, O_WRONLY | O_CREAT|O_APPEND , mode);
 	//生成clientCommit.manifest
 	recursive_newManEntry(fd_clientCommitManifestName, projectName, 1);
 	close(fd_clientCommitManifestName);
@@ -142,7 +184,6 @@ static void createCommitFile(char *projectName)
 
 void clientCommit(char* projectName)
 {
-
 
     char *updateFile = malloc(strlen(projectName) + 14);
     sprintf(updateFile, "%s/.git/.Update",projectName );
